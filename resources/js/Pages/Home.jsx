@@ -124,7 +124,7 @@ export default function Home({ products }) {
                                 <div className="h-80 bg-slate-100 overflow-hidden relative">
                                     {item.gambar_url ? (
                                         <img
-                                            src={`/storage/${item.gambar_url}`}
+                                            src={item.gambar_url.startsWith('http') ? item.gambar_url : `/storage/${item.gambar_url}`}
                                             alt={item.nama_produk}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                                         />

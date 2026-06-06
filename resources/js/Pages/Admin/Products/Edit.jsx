@@ -97,7 +97,7 @@ export default function Edit({ auth, product }) {
                                         <div className="mt-4">
                                             <p className="text-xs font-bold text-gray-500 mb-2">Foto Saat Ini:</p>
                                             <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200">
-                                                <img src={`/storage/${product.gambar_url}`} className="w-full h-full object-cover" />
+                                                <img src={product.gambar_url.startsWith('http') ? product.gambar_url : `/storage/${product.gambar_url}`} className="w-full h-full object-cover" />
                                             </div>
                                         </div>
                                     )}

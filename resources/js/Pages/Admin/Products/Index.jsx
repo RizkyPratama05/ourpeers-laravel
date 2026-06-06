@@ -56,7 +56,7 @@ export default function Index({ auth, products }) {
                         <div key={product.id} className="group bg-white rounded-[4rem] overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.02)] border border-slate-50 hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] hover:-translate-y-3 transition-all duration-700">
                             <div className="h-64 bg-slate-100 relative overflow-hidden">
                                 {product.gambar_url ? (
-                                    <img src={`/storage/${product.gambar_url}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                    <img src={product.gambar_url.startsWith('http') ? product.gambar_url : `/storage/${product.gambar_url}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-200 bg-slate-50"><Package size={64} strokeWidth={1} /></div>
                                 )}

@@ -52,7 +52,7 @@ export default function Products({ products }) {
                                 <div className="h-60 w-full bg-gray-200 overflow-hidden flex items-center justify-center relative">
                                     {item.gambar_url ? (
                                         <img
-                                            src={`/storage/${item.gambar_url}`}
+                                            src={item.gambar_url.startsWith('http') ? item.gambar_url : `/storage/${item.gambar_url}`}
                                             alt={item.nama_produk}
                                             className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                                         />

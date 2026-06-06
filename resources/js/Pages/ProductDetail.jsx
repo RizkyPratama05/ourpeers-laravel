@@ -44,7 +44,7 @@ export default function ProductDetail({ product }) {
                     <div className="bg-gray-100 rounded-2xl h-[400px] md:h-[500px] flex items-center justify-center shadow-inner overflow-hidden border border-gray-200">
                         {product.gambar_url ? (
                             <img
-                                src={`/storage/${product.gambar_url}`}
+                                src={product.gambar_url.startsWith('http') ? product.gambar_url : `/storage/${product.gambar_url}`}
                                 alt={product.nama_produk}
                                 className="w-full h-full object-contain hover:scale-105 transition duration-500"
                             />
