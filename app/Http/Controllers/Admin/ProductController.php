@@ -63,6 +63,9 @@ class ProductController extends Controller
             'harga' => 'required|numeric',
             'stok' => 'required|integer',
             'deskripsi' => 'required|string',
+            'bahan' => 'nullable|string',
+            'warna' => 'nullable|string',
+            'keunggulan' => 'nullable|string',
             'gambar' => 'nullable|image|max:2048',
         ]);
 
