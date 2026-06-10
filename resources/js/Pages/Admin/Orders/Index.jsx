@@ -14,6 +14,8 @@ export default function Index({ auth, orders }) {
         switch (status) {
             case 'menunggu_bayar': 
                 return { bg: 'bg-amber-500/10', text: 'text-amber-600', dot: 'bg-amber-500', icon: <Clock size={14} />, label: 'Menunggu Pembayaran' };
+            case 'sudah_bayar': 
+                return { bg: 'bg-emerald-500/10', text: 'text-emerald-600', dot: 'bg-emerald-500', icon: <CheckCircle size={14} />, label: 'Sudah Bayar' };
             case 'diproses': 
                 return { bg: 'bg-blue-500/10', text: 'text-blue-600', dot: 'bg-blue-500', icon: <Package size={14} />, label: 'Sedang Diproses' };
             case 'siap': 
@@ -146,9 +148,26 @@ export default function Index({ auth, orders }) {
                                                                 </div>
                                                             );
                                                         })}
-                                                        <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 bg-slate-50 w-fit px-2 py-1 rounded-lg">
-                                                            <User size={10} /> {order.nama_penerima || 'Customer'}
-                                                        </div>
+                                                         <div className="flex flex-col gap-1 mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50 w-fit px-3 py-2 rounded-xl border border-slate-100 text-left">
+                                                             <div className="flex items-center gap-2 text-slate-600">
+                                                                 <User size={10} className="text-slate-500" /> {order.nama_pemesan || 'Customer'}
+                                                             </div>
+                                                             {order.whatsapp_pemesan && (
+                                                                 <div className="flex items-center gap-2 font-mono text-slate-500 lowercase">
+                                                                     <span>📞</span> {order.whatsapp_pemesan}
+                                                                 </div>
+                                                             )}
+                                                             {order.email_pemesan && (
+                                                                 <div className="flex items-center gap-2 font-mono text-slate-500 lowercase">
+                                                                     <span>✉️</span> {order.email_pemesan}
+                                                                 </div>
+                                                             )}
+                                                             {order.organisasi_pemesan && (
+                                                                 <div className="flex items-center gap-2 text-slate-500">
+                                                                     <span>🏢</span> {order.organisasi_pemesan}
+                                                                 </div>
+                                                             )}
+                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-6 border-y border-transparent group-hover:border-slate-100 text-center">
@@ -180,10 +199,15 @@ export default function Index({ auth, orders }) {
                                                         value={order.status}
                                                         onChange={(e) => updateStatus(order.id, e.target.value)}
                                                     >
-                                                        <option value="menunggu_bayar">Menunggu Bayar</option>
-                                                        <option value="diproses">Proses Pesanan</option>
-                                                        <option value="siap">Siap Dikirim</option>
-                                                        <option value="selesai">Selesaikan Order</option>
+                                                         {order.status === 'menunggu_bayar' && (
+                                                             <option value="menunggu_bayar">Menunggu Bayar</option>
+                                                         )}
+                                                         {order.status === 'sudah_bayar' && (
+                                                             <option value="sudah_bayar">Sudah Bayar</option>
+                                                         )}
+                                                         <option value="diproses">Proses Pesanan</option>
+                                                         <option value="siap">Siap Dikirim</option>
+                                                         <option value="selesai">Selesaikan Order</option>
                                                     </select>
                                                 </td>
                                             </tr>

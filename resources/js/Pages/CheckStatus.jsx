@@ -169,7 +169,7 @@ export default function CheckStatus({ order: initialOrder }) {
                             </div>
 
                             {/* SECTION PEMBAYARAN MANUAL */}
-                            {initialOrder.status === 'menunggu_bayar' && (
+                            {(initialOrder.status === 'menunggu_bayar' || initialOrder.status === 'sudah_bayar') && (
                                 <div className="mt-12 pt-8 border-t border-gray-100">
                                     <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 md:p-8">
                                         <h4 className="text-lg font-black text-brand-navy mb-4 flex items-center gap-2">

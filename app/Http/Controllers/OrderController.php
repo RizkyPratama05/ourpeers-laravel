@@ -42,6 +42,10 @@ class OrderController extends Controller
             $order = Order::create([
                 'id' => $orderId,
                 'user_id' => $request->user_id ?? null,
+                'nama_pemesan' => $request->customer_info['nama'] ?? null,
+                'whatsapp_pemesan' => $request->customer_info['whatsapp'] ?? null,
+                'email_pemesan' => $request->customer_info['email'] ?? null,
+                'organisasi_pemesan' => $request->customer_info['organisasi'] ?? null,
                 'total_belanja' => $totalBelanja,
                 'biaya_ongkir' => $ongkirFlat,
                 'grand_total' => $grandTotal,
@@ -97,6 +101,7 @@ class OrderController extends Controller
             $path = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
             $order->update([
                 'bukti_transfer' => $path,
+                'status' => 'sudah_bayar',
             ]);
         }
 

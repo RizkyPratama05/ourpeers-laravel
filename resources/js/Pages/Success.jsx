@@ -74,7 +74,7 @@ export default function Success({ id, order }) {
                     </div>
 
                     {/* SECTION PEMBAYARAN MANUAL - LANGSUNG SETELAH CHECKOUT */}
-                    {order && order.status === 'menunggu_bayar' && (
+                    {order && (order.status === 'menunggu_bayar' || order.status === 'sudah_bayar') && (
                         <div className="mt-8 mb-8 text-left bg-slate-50 border border-slate-200 rounded-2xl p-6 md:p-8">
                             <h4 className="text-lg font-black text-brand-navy mb-4 flex items-center gap-2">
                                 <AlertCircle className="text-amber-500" size={20} />
