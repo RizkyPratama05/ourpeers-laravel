@@ -14,6 +14,7 @@ class OrderController extends Controller
 {
     public function index()
     {
+        Order::cancelExpiredOrders();
         return Inertia::render('Admin/Orders/Index', [
             'orders' => Order::with('items.product')->latest()->get(),
         ]);

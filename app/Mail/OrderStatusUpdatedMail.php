@@ -30,6 +30,7 @@ class OrderStatusUpdatedMail extends Mailable
             'diproses' => 'Sedang Diproses',
             'siap' => 'Siap Dikirim / Diambil',
             'selesai' => 'Selesai',
+            'batal' => 'Dibatalkan Otomatis',
         ];
 
         $descriptions = [
@@ -38,6 +39,7 @@ class OrderStatusUpdatedMail extends Mailable
             'diproses' => 'Pembayaran Anda telah disetujui! Saat ini pesanan Anda sedang masuk ke tahap produksi oleh tim konveksi kami.',
             'siap' => 'Kabar baik! Pesanan Anda telah selesai diproduksi dan siap dikirim ke alamat Anda atau diambil di workshop kami.',
             'selesai' => 'Pesanan Anda telah selesai diproses sepenuhnya. Terima kasih telah mempercayakan Ourpeers Konveksi!',
+            'batal' => 'Mohon maaf, pesanan Anda telah dibatalkan secara otomatis oleh sistem karena batas waktu pembayaran (5 menit) telah habis.',
         ];
 
         $this->statusLabel = $labels[$order->status] ?? $order->status;

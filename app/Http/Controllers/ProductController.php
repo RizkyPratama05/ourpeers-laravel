@@ -44,6 +44,10 @@ class ProductController extends Controller
     {
         $product = Product::with('category')->findOrFail($id);
 
+        if ($product->stok <= 0) {
+            return redirect()->route('products.show', $id)->with('error', 'Produk ini sedang habis stok.');
+        }
+
         return Inertia::render('CustomOrder', [
             'product' => $product,
         ]);

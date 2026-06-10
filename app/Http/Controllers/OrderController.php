@@ -20,11 +20,13 @@ class OrderController extends Controller
 {
     public function checkout()
     {
+        Order::cancelExpiredOrders();
         return Inertia::render('Checkout');
     }
 
     public function store(Request $request)
     {
+        Order::cancelExpiredOrders();
         $validated = $request->validate([
             'alamat' => 'required|string',
             'kurir' => 'required|string',
@@ -37,6 +39,12 @@ class OrderController extends Controller
         $ongkirFlat = 15000;
 
         foreach ($request->items as $item) {
+            $product = Product::findOrFail($item['id']);
+            if ($product->stok < $item['qty']) {
+                return redirect()->back()->withErrors([
+                    'items' => "Stok produk '{$product->nama_produk}' tidak mencukupi (Tersedia: {$product->stok} pcs)."
+                ]);
+            }
             $totalBelanja += $item['harga'] * $item['qty'];
         }
 
@@ -114,6 +122,7 @@ class OrderController extends Controller
 
     public function show($id)
     {
+        Order::cancelExpiredOrders();
         return Inertia::render('CheckStatus', [
             'order' => Order::with('items.product')->findOrFail($id),
         ]);
@@ -121,6 +130,7 @@ class OrderController extends Controller
 
     public function checkStatus()
     {
+        Order::cancelExpiredOrders();
         return Inertia::render('CheckStatus');
     }
 

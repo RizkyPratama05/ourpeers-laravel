@@ -23,6 +23,7 @@ Route::get('/product/{id}/custom', [ProductController::class, 'custom'])->name('
 Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
 Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
 Route::get('/order/success/{id}', function ($id) {
+    \App\Models\Order::cancelExpiredOrders();
     $order = \App\Models\Order::findOrFail($id);
     return Inertia::render('Success', [
         'id' => $id,

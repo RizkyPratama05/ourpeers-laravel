@@ -1,6 +1,6 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Checkout() {
@@ -15,6 +15,8 @@ export default function Checkout() {
         alamat: '',
     });
 
+    const [modalMessage, setModalMessage] = useState(null);
+
     useEffect(() => {
         const data = localStorage.getItem('tempOrder');
         if (data) {
@@ -28,7 +30,7 @@ export default function Checkout() {
 
     const handleSubmit = () => {
         if (!formData.nama || !formData.whatsapp || !formData.alamat || !formData.email) {
-            alert('Mohon lengkapi Nama, WhatsApp, Email, dan Alamat.');
+            setModalMessage('Mohon lengkapi Nama, WhatsApp, Email, dan Alamat.');
             return;
         }
 
@@ -61,7 +63,7 @@ export default function Checkout() {
             },
             onError: (errors) => {
                 console.error(errors);
-                alert('Terjadi kesalahan saat memproses pesanan.');
+                setModalMessage(errors.items || 'Terjadi kesalahan saat memproses pesanan.');
             }
         });
     };
@@ -245,6 +247,23 @@ export default function Checkout() {
                     </div>
                 </div>
             </div>
+            {modalMessage && (
+                <div className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle size={32} />
+                        </div>
+                        <h3 className="text-lg font-black text-brand-navy mb-2 uppercase tracking-wider">Pemberitahuan</h3>
+                        <p className="text-sm text-slate-600 leading-relaxed mb-6">{modalMessage}</p>
+                        <button
+                            onClick={() => setModalMessage(null)}
+                            className="w-full bg-brand-navy text-white font-black text-xs uppercase tracking-widest py-4 rounded-xl hover:bg-brand-dark transition shadow-lg cursor-pointer"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 }

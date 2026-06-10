@@ -193,4 +193,112 @@ class OrderEmailTest extends TestCase
                    $mail->order->status === 'diproses';
         });
     }
+
+    public function test_expired_order_is_automatically_cancelled()
+    {
+        Mail::fake();
+
+        $this->mock(WhatsAppService::class, function ($mock) {
+            $mock->shouldReceive('send')
+                ->once()
+                ->with('081234567890', \Mockery::on(function ($msg) {
+                    return str_contains($msg, 'telah dibatalkan secara otomatis') &&
+                           str_contains($msg, 'Dibatalkan');
+                }))
+                ->andReturn(true);
+        });
+
+        $category = Category::create(['nama' => 'Kaos', 'slug' => 'kaos']);
+        $product = Product::create([
+            'nama_produk' => 'Kaos Polos',
+            'harga' => 50000,
+            'stok' => 10,
+            'deskripsi' => 'Kaos polos premium',
+            'bahan' => 'Cotton Combed 30s',
+            'warna' => 'Hitam',
+            'category_id' => $category->id,
+        ]);
+
+        $order = Order::create([
+            'id' => 'INV-EXPIRED123',
+            'nama_pemesan' => 'Budi Santoso',
+            'whatsapp_pemesan' => '081234567890',
+            'email_pemesan' => 'budi@example.com',
+            'total_belanja' => 50000,
+            'biaya_ongkir' => 15000,
+            'grand_total' => 65000,
+            'status' => 'menunggu_bayar',
+            'alamat_pengiriman' => 'Jl. Merdeka No. 123',
+            'kurir_pengiriman' => 'JNE',
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('orders')
+            ->where('id', $order->id)
+            ->update(['created_at' => now()->subMinutes(6)]);
+
+        \App\Models\OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'qty' => 2,
+            'harga_satuan' => 50000,
+            'subtotal' => 100000,
+        ]);
+
+        // Stock was decremented at checkout, so let's set current product stock to 8 (simulating checkout occurred)
+        $product->update(['stok' => 8]);
+
+        // Run the artisan command
+        $this->artisan('orders:cancel-expired')
+            ->assertExitCode(0);
+
+        $this->assertEquals('batal', $order->fresh()->status);
+        $this->assertEquals(10, $product->fresh()->stok); // Stock restored from 8 to 10
+
+        Mail::assertSent(OrderStatusUpdatedMail::class, function ($mail) {
+            return $mail->hasTo('budi@example.com') &&
+                   $mail->order->status === 'batal';
+        });
+    }
+
+    public function test_checkout_fails_if_insufficient_stock()
+    {
+        Mail::fake();
+
+        $category = Category::create(['nama' => 'Kaos', 'slug' => 'kaos']);
+        $product = Product::create([
+            'nama_produk' => 'Kaos Polos',
+            'harga' => 50000,
+            'stok' => 2,
+            'deskripsi' => 'Kaos polos premium',
+            'bahan' => 'Cotton Combed 30s',
+            'warna' => 'Hitam',
+            'category_id' => $category->id,
+        ]);
+
+        $payload = [
+            'alamat' => 'Jl. Merdeka No. 123',
+            'kurir' => 'JNE',
+            'customer_info' => [
+                'nama' => 'Budi Santoso',
+                'whatsapp' => '081234567890',
+                'email' => 'budi@example.com',
+                'organisasi' => 'PT. Sukses Selalu',
+            ],
+            'items' => [
+                [
+                    'id' => $product->id,
+                    'qty' => 3, // Requesting more than available stock
+                    'harga' => 50000,
+                ]
+            ],
+        ];
+
+        $response = $this->from(route('checkout'))->post(route('checkout.store'), $payload);
+
+        $response->assertRedirect(route('checkout'));
+        $response->assertSessionHasErrors(['items']);
+        
+        $this->assertEquals(0, Order::count());
+        $this->assertEquals(2, $product->fresh()->stok);
+    }
 }

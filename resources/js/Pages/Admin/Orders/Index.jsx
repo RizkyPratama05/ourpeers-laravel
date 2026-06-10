@@ -22,6 +22,8 @@ export default function Index({ auth, orders }) {
                 return { bg: 'bg-purple-500/10', text: 'text-purple-600', dot: 'bg-purple-500', icon: <Truck size={14} />, label: 'Siap Dikirim' };
             case 'selesai': 
                 return { bg: 'bg-emerald-500/10', text: 'text-emerald-600', dot: 'bg-emerald-500', icon: <CheckCircle size={14} />, label: 'Selesai' };
+            case 'batal': 
+                return { bg: 'bg-rose-500/10', text: 'text-rose-600', dot: 'bg-rose-500', icon: <X size={14} />, label: 'Dibatalkan' };
             default: 
                 return { bg: 'bg-slate-500/10', text: 'text-slate-600', dot: 'bg-slate-500', icon: <Clock size={14} />, label: 'Unknown' };
         }
@@ -195,19 +197,27 @@ export default function Index({ auth, orders }) {
                                                 </td>
                                                 <td className="px-6 py-6 bg-slate-50/30 group-hover:bg-white rounded-r-[2rem] border-y border-r border-transparent group-hover:border-slate-100 text-right">
                                                     <select
-                                                        className="text-[10px] font-black uppercase tracking-widest bg-white border-slate-200 rounded-xl focus:border-brand-lime focus:ring-4 focus:ring-brand-lime/10 transition-all cursor-pointer shadow-sm hover:border-brand-lime"
+                                                        className="text-[10px] font-black uppercase tracking-widest bg-white border-slate-200 rounded-xl focus:border-brand-lime focus:ring-4 focus:ring-brand-lime/10 transition-all cursor-pointer shadow-sm hover:border-brand-lime disabled:opacity-50 disabled:cursor-not-allowed"
                                                         value={order.status}
                                                         onChange={(e) => updateStatus(order.id, e.target.value)}
+                                                        disabled={order.status === 'batal' || order.status === 'selesai'}
                                                     >
+                                                         {order.status === 'batal' && (
+                                                             <option value="batal">Dibatalkan</option>
+                                                         )}
                                                          {order.status === 'menunggu_bayar' && (
                                                              <option value="menunggu_bayar">Menunggu Bayar</option>
                                                          )}
                                                          {order.status === 'sudah_bayar' && (
                                                              <option value="sudah_bayar">Sudah Bayar</option>
                                                          )}
-                                                         <option value="diproses">Proses Pesanan</option>
-                                                         <option value="siap">Siap Dikirim</option>
-                                                         <option value="selesai">Selesaikan Order</option>
+                                                         {order.status !== 'batal' && (
+                                                             <>
+                                                                 <option value="diproses">Proses Pesanan</option>
+                                                                 <option value="siap">Siap Dikirim</option>
+                                                                 <option value="selesai">Selesaikan Order</option>
+                                                             </>
+                                                         )}
                                                     </select>
                                                 </td>
                                             </tr>

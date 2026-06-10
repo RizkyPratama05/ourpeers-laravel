@@ -1,6 +1,6 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Check, ChevronRight, Upload, Image, RefreshCw, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Upload, Image, RefreshCw, X, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -10,6 +10,8 @@ export default function CustomOrder({ product }) {
     const [warna, setWarna] = useState('');
     const [ukuran, setUkuran] = useState({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
     const [catatan, setCatatan] = useState('');
+    
+    const [modalMessage, setModalMessage] = useState(null);
 
     // State Desain Custom
     const [dadaKiriFile, setDadaKiriFile] = useState(null);
@@ -55,7 +57,7 @@ export default function CustomOrder({ product }) {
             }
         } catch (error) {
             console.error(error);
-            alert('Gagal mengunggah desain. Silakan coba file gambar lain.');
+            setModalMessage('Gagal mengunggah desain. Silakan coba file gambar lain.');
             if (type === 'dada_kiri') {
                 setDadaKiriFile(null);
             } else {
@@ -92,7 +94,12 @@ export default function CustomOrder({ product }) {
 
     const handleLanjut = () => {
         if (!bahan || !warna || totalQty === 0) {
-            alert('Mohon pilih bahan, warna, dan minimal 1 ukuran (jumlah pcs).');
+            setModalMessage('Mohon pilih bahan, warna, dan minimal 1 ukuran (jumlah pcs).');
+            return;
+        }
+
+        if (totalQty > product.stok) {
+            setModalMessage(`Mohon maaf, jumlah pesanan Anda (${totalQty} pcs) melebihi stok yang tersedia (${product.stok} pcs).`);
             return;
         }
 
@@ -433,6 +440,23 @@ export default function CustomOrder({ product }) {
                     </div>
                 </div>
             </div>
+            {modalMessage && (
+                <div className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle size={32} />
+                        </div>
+                        <h3 className="text-lg font-black text-brand-navy mb-2 uppercase tracking-wider">Pemberitahuan</h3>
+                        <p className="text-sm text-slate-600 leading-relaxed mb-6">{modalMessage}</p>
+                        <button
+                            onClick={() => setModalMessage(null)}
+                            className="w-full bg-brand-navy text-white font-black text-xs uppercase tracking-widest py-4 rounded-xl hover:bg-brand-dark transition shadow-lg cursor-pointer"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 }

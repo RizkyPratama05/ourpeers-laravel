@@ -60,8 +60,19 @@ export default function ProductDetail({ product }) {
                         </h1>
 
                         <p className="text-sm text-gray-500 mb-1">Harga Mulai Dari</p>
-                        <div className="text-3xl font-bold text-brand-lime mb-6">
-                            Rp {product.harga.toLocaleString('id-ID')}
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="text-3xl font-bold text-brand-lime">
+                                Rp {product.harga.toLocaleString('id-ID')}
+                            </div>
+                            {product.stok > 0 ? (
+                                <span className="text-xs bg-lime-50 text-brand-lime px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-brand-lime/20">
+                                    Stok: {product.stok} pcs
+                                </span>
+                            ) : (
+                                <span className="text-xs bg-red-50 text-red-500 px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-red-200">
+                                    Stok Habis
+                                </span>
+                            )}
                         </div>
 
                         <div className="mb-8">
@@ -120,12 +131,21 @@ export default function ProductDetail({ product }) {
                         </div>
 
                         {/* TOMBOL KE CUSTOM ORDER */}
-                        <Link
-                            href={`/product/${product.id}/custom`}
-                            className="block text-center w-full bg-brand-lime text-brand-navy font-bold py-4 rounded-xl text-lg hover:bg-lime-500 transition shadow-xl shadow-lime-200/50"
-                        >
-                            Custom & Pesan Sekarang
-                        </Link>
+                        {product.stok > 0 ? (
+                            <Link
+                                href={`/product/${product.id}/custom`}
+                                className="block text-center w-full bg-brand-lime text-brand-navy font-bold py-4 rounded-xl text-lg hover:bg-lime-500 transition shadow-xl shadow-lime-200/50"
+                            >
+                                Custom & Pesan Sekarang
+                            </Link>
+                        ) : (
+                            <button
+                                disabled
+                                className="block text-center w-full bg-slate-200 text-slate-400 font-bold py-4 rounded-xl text-lg cursor-not-allowed shadow-none"
+                            >
+                                Stok Habis
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
