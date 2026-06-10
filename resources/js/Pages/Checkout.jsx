@@ -46,6 +46,7 @@ export default function Checkout() {
                         warna: orderData.warna,
                         ukuran: orderData.ukuran,
                         catatan: orderData.catatan,
+                        desain: orderData.desain || null,
                     },
                 },
             ],
@@ -171,6 +172,38 @@ export default function Checkout() {
                                     <span className="text-gray-500">Warna</span>
                                     <span className="font-medium">{orderData.warna}</span>
                                 </div>
+
+                                {orderData.desain?.dada_kiri?.url && (
+                                    <div className="pb-2 border-b border-gray-100 space-y-1">
+                                        <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Desain Depan</p>
+                                        <div className="flex items-center gap-2">
+                                            <img
+                                                src={orderData.desain.dada_kiri.url}
+                                                alt="Desain Depan"
+                                                className="w-10 h-10 object-cover rounded border border-slate-100"
+                                            />
+                                            <span className="text-xs font-medium text-slate-600">
+                                                Ukuran: {orderData.desain.dada_kiri.size || 'Standar'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {orderData.desain?.belakang?.url && (
+                                    <div className="pb-2 border-b border-gray-100 space-y-1">
+                                        <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Desain Belakang</p>
+                                        <div className="flex items-center gap-2">
+                                            <img
+                                                src={orderData.desain.belakang.url}
+                                                alt="Belakang"
+                                                className="w-10 h-10 object-cover rounded border border-slate-100"
+                                            />
+                                            <span className="text-xs font-medium text-slate-600">
+                                                Ukuran: {orderData.desain.belakang.size || 'Standar'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">Total Jumlah</span>
                                     <span className="font-bold">{orderData.totalQty} pcs</span>

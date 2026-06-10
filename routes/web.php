@@ -32,6 +32,7 @@ Route::get('/order/success/{id}', function ($id) {
 Route::get('/status', [OrderController::class, 'checkStatus'])->name('orders.status');
 Route::get('/order/{id}', [OrderController::class, 'show'])->name('orders.show');
 Route::post('/order/{id}/upload-bukti', [OrderController::class, 'uploadBukti'])->name('orders.upload-bukti');
+Route::post('/upload-design', [OrderController::class, 'uploadDesign'])->name('orders.upload-design');
 
 // About
 Route::get('/about', function () {

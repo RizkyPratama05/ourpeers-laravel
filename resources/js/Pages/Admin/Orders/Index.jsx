@@ -89,12 +89,63 @@ export default function Index({ auth, orders }) {
                                                 </td>
                                                 <td className="px-6 py-6 border-y border-transparent group-hover:border-slate-100">
                                                     <div className="space-y-2">
-                                                        {order.items.map((item, i) => (
-                                                            <div key={i} className="flex items-center gap-2">
-                                                                <div className="w-5 h-5 bg-slate-100 rounded flex items-center justify-center text-[10px] font-black text-slate-500">{item.qty}</div>
-                                                                <span className="text-xs font-bold text-slate-600">{item.product?.nama_produk}</span>
-                                                            </div>
-                                                        ))}
+                                                        {order.items.map((item, i) => {
+                                                            const custom = item.customization;
+                                                            return (
+                                                                <div key={i} className="space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="w-5 h-5 bg-slate-100 rounded flex items-center justify-center text-[10px] font-black text-slate-500">{item.qty}</div>
+                                                                        <span className="text-xs font-bold text-slate-800">{item.product?.nama_produk}</span>
+                                                                    </div>
+                                                                    {custom && (
+                                                                        <div className="ml-7 bg-slate-50 p-3 rounded-lg border border-slate-100 text-[10px] text-slate-500 space-y-1 max-w-sm text-left">
+                                                                            <div className="flex justify-between">
+                                                                                <span className="font-bold">Bahan:</span>
+                                                                                <span>{custom.bahan}</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="font-bold">Warna:</span>
+                                                                                <span>{custom.warna}</span>
+                                                                            </div>
+                                                                            <div className="font-bold mt-1">Ukuran:</div>
+                                                                            <div className="flex gap-2 flex-wrap">
+                                                                                {custom.ukuran && Object.entries(custom.ukuran).map(([sz, q]) => q > 0 && (
+                                                                                    <span key={sz} className="bg-white px-1.5 py-0.5 rounded border border-slate-200">{sz}: {q}pcs</span>
+                                                                                ))}
+                                                                            </div>
+                                                                            {custom.catatan && (
+                                                                                <div className="mt-1 italic text-slate-400">
+                                                                                    Catatan: "{custom.catatan}"
+                                                                                </div>
+                                                                            )}
+                                                                            {/* Custom designs */}
+                                                                            {custom.desain?.dada_kiri?.path && (
+                                                                                <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center gap-2">
+                                                                                    <span className="font-bold text-[9px] uppercase tracking-wider text-slate-400">Depan:</span>
+                                                                                    <button
+                                                                                        onClick={() => setSelectedBukti(`/storage/${custom.desain.dada_kiri.path}`)}
+                                                                                        className="text-brand-lime hover:underline font-bold cursor-pointer"
+                                                                                    >
+                                                                                        Lihat Desain ({custom.desain.dada_kiri.size || 'Standar'})
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                            {custom.desain?.belakang?.path && (
+                                                                                <div className="mt-1 flex items-center gap-2">
+                                                                                    <span className="font-bold text-[9px] uppercase tracking-wider text-slate-400">Belakang:</span>
+                                                                                    <button
+                                                                                        onClick={() => setSelectedBukti(`/storage/${custom.desain.belakang.path}`)}
+                                                                                        className="text-brand-lime hover:underline font-bold cursor-pointer"
+                                                                                    >
+                                                                                        Lihat Desain ({custom.desain.belakang.size || 'Standar'})
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
                                                         <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 bg-slate-50 w-fit px-2 py-1 rounded-lg">
                                                             <User size={10} /> {order.nama_penerima || 'Customer'}
                                                         </div>

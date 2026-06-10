@@ -1,7 +1,8 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Check, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Upload, Image, RefreshCw, X } from 'lucide-react';
 import { useState } from 'react';
+import axios from 'axios';
 
 export default function CustomOrder({ product }) {
     // State Pilihan User
@@ -9,6 +10,65 @@ export default function CustomOrder({ product }) {
     const [warna, setWarna] = useState('');
     const [ukuran, setUkuran] = useState({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
     const [catatan, setCatatan] = useState('');
+
+    // State Desain Custom
+    const [dadaKiriFile, setDadaKiriFile] = useState(null);
+    const [dadaKiriPath, setDadaKiriPath] = useState('');
+    const [dadaKiriUrl, setDadaKiriUrl] = useState('');
+    const [dadaKiriSize, setDadaKiriSize] = useState('');
+    const [dadaKiriLoading, setDadaKiriLoading] = useState(false);
+
+    const [belakangFile, setBelakangFile] = useState(null);
+    const [belakangPath, setBelakangPath] = useState('');
+    const [belakangUrl, setBelakangUrl] = useState('');
+    const [belakangSize, setBelakangSize] = useState('');
+    const [belakangLoading, setBelakangLoading] = useState(false);
+
+    const handleDesignUpload = async (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('design_file', file);
+
+        if (type === 'dada_kiri') {
+            setDadaKiriFile(file);
+            setDadaKiriLoading(true);
+        } else {
+            setBelakangFile(file);
+            setBelakangLoading(true);
+        }
+
+        try {
+            const response = await axios.post('/upload-design', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            if (response.data.success) {
+                if (type === 'dada_kiri') {
+                    setDadaKiriPath(response.data.path);
+                    setDadaKiriUrl(response.data.url);
+                } else {
+                    setBelakangPath(response.data.path);
+                    setBelakangUrl(response.data.url);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Gagal mengunggah desain. Silakan coba file gambar lain.');
+            if (type === 'dada_kiri') {
+                setDadaKiriFile(null);
+            } else {
+                setBelakangFile(null);
+            }
+        } finally {
+            if (type === 'dada_kiri') {
+                setDadaKiriLoading(false);
+            } else {
+                setBelakangLoading(false);
+            }
+        }
+    };
 
     const stringToArray = (str) =>
         str ? str.split(',').map((s) => s.trim()) : [];
@@ -45,6 +105,18 @@ export default function CustomOrder({ product }) {
             unitPrice,
             totalPrice,
             catatan,
+            desain: {
+                dada_kiri: {
+                    path: dadaKiriPath,
+                    url: dadaKiriUrl,
+                    size: dadaKiriSize,
+                },
+                belakang: {
+                    path: belakangPath,
+                    url: belakangUrl,
+                    size: belakangSize,
+                }
+            }
         };
 
         localStorage.setItem('tempOrder', JSON.stringify(orderSummary));
@@ -144,13 +216,147 @@ export default function CustomOrder({ product }) {
                             </div>
                         </div>
 
+                        {/* SECTION UPLOAD DESAIN CUSTOM */}
+                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 className="font-bold text-brand-navy mb-2">
+                                Desain Sablon / Bordir Custom (Opsional)
+                            </h3>
+                            <p className="text-xs text-gray-500 mb-6">
+                                Unggah logo atau desain yang ingin dipasang beserta ukurannya untuk mempermudah pengerjaan kami.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Desain Depan */}
+                                <div className="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                                    <h4 className="text-sm font-bold text-brand-navy mb-3">
+                                        Desain Depan
+                                    </h4>
+                                    
+                                    <div className="mb-4">
+                                        {!dadaKiriUrl ? (
+                                            <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-6 bg-white hover:border-brand-lime hover:bg-lime-50/10 transition cursor-pointer group">
+                                                {dadaKiriLoading ? (
+                                                    <RefreshCw size={24} className="text-slate-400 animate-spin mb-2" />
+                                                ) : (
+                                                    <Upload size={24} className="text-slate-400 group-hover:text-brand-lime mb-2 group-hover:scale-110 transition" />
+                                                )}
+                                                <span className="text-xs font-bold text-slate-600 group-hover:text-brand-navy">
+                                                    {dadaKiriLoading ? "Mengunggah..." : "Pilih Desain"}
+                                                </span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => handleDesignUpload(e, 'dada_kiri')}
+                                                    disabled={dadaKiriLoading}
+                                                />
+                                            </label>
+                                        ) : (
+                                            <div className="relative border border-slate-200 rounded-lg bg-white p-2 flex items-center justify-between">
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <img
+                                                        src={dadaKiriUrl}
+                                                        alt="Desain Depan"
+                                                        className="w-12 h-12 object-cover rounded shadow-sm border border-slate-100"
+                                                    />
+                                                    <span className="text-[10px] font-bold text-slate-500 truncate max-w-[120px]">
+                                                        {dadaKiriFile?.name || 'desain-depan.jpg'}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={() => { setDadaKiriFile(null); setDadaKiriUrl(''); setDadaKiriPath(''); }}
+                                                    className="w-6 h-6 rounded-full bg-slate-100 text-red-500 hover:bg-red-50 flex items-center justify-center transition"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">
+                                            Ukuran Desain Depan (cm / A4 / dll)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Contoh: 8x8 cm"
+                                            className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:border-brand-lime focus:outline-none"
+                                            value={dadaKiriSize}
+                                            onChange={(e) => setDadaKiriSize(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Desain Belakang */}
+                                <div className="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                                    <h4 className="text-sm font-bold text-brand-navy mb-3">
+                                        Desain Belakang (Punggung)
+                                    </h4>
+                                    
+                                    <div className="mb-4">
+                                        {!belakangUrl ? (
+                                            <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-6 bg-white hover:border-brand-lime hover:bg-lime-50/10 transition cursor-pointer group">
+                                                {belakangLoading ? (
+                                                    <RefreshCw size={24} className="text-slate-400 animate-spin mb-2" />
+                                                ) : (
+                                                    <Upload size={24} className="text-slate-400 group-hover:text-brand-lime mb-2 group-hover:scale-110 transition" />
+                                                )}
+                                                <span className="text-xs font-bold text-slate-600 group-hover:text-brand-navy">
+                                                    {belakangLoading ? "Mengunggah..." : "Pilih Desain"}
+                                                </span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => handleDesignUpload(e, 'belakang')}
+                                                    disabled={belakangLoading}
+                                                />
+                                            </label>
+                                        ) : (
+                                            <div className="relative border border-slate-200 rounded-lg bg-white p-2 flex items-center justify-between">
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <img
+                                                        src={belakangUrl}
+                                                        alt="Desain Belakang"
+                                                        className="w-12 h-12 object-cover rounded shadow-sm border border-slate-100"
+                                                    />
+                                                    <span className="text-[10px] font-bold text-slate-500 truncate max-w-[120px]">
+                                                        {belakangFile?.name || 'desain-belakang.jpg'}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={() => { setBelakangFile(null); setBelakangUrl(''); setBelakangPath(''); }}
+                                                    className="w-6 h-6 rounded-full bg-slate-100 text-red-500 hover:bg-red-50 flex items-center justify-center transition"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">
+                                            Ukuran Desain Belakang (cm / A4 / dll)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Contoh: A4, 25x30 cm"
+                                            className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:border-brand-lime focus:outline-none"
+                                            value={belakangSize}
+                                            onChange={(e) => setBelakangSize(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                             <h3 className="font-bold text-brand-navy mb-4">
                                 Catatan Tambahan (Opsional)
                             </h3>
                             <textarea
                                 rows="3"
-                                placeholder="Contoh: Logo di dada kiri, Nama 'Budi' di punggung..."
+                                placeholder="Contoh: Logo di bagian depan, Nama 'Budi' di punggung..."
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:border-brand-lime focus:outline-none"
                                 value={catatan}
                                 onChange={(e) => setCatatan(e.target.value)}
@@ -188,6 +394,20 @@ export default function CustomOrder({ product }) {
                                     <span className="text-gray-500">Warna</span>
                                     <span className="font-medium">{warna || '-'}</span>
                                 </div>
+
+                                {dadaKiriPath && (
+                                    <div className="flex justify-between border-b border-gray-100 pb-2 text-xs">
+                                        <span className="text-gray-500">Desain Depan</span>
+                                        <span className="font-medium text-emerald-600">Terunggah ({dadaKiriSize || 'Standar'})</span>
+                                    </div>
+                                )}
+
+                                {belakangPath && (
+                                    <div className="flex justify-between border-b border-gray-100 pb-2 text-xs">
+                                        <span className="text-gray-500">Desain Belakang</span>
+                                        <span className="font-medium text-emerald-600">Terunggah ({belakangSize || 'Standar'})</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mb-6 bg-slate-50 p-4 rounded-lg">

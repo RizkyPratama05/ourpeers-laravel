@@ -12,6 +12,11 @@ class OrderItem extends Model
         'qty',
         'harga_satuan',
         'subtotal',
+        'customization',
+    ];
+
+    protected $casts = [
+        'customization' => 'array',
     ];
 
     public function order()

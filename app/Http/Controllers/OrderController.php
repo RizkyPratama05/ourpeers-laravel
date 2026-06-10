@@ -57,6 +57,7 @@ class OrderController extends Controller
                     'qty' => $item['qty'],
                     'harga_satuan' => $item['harga'],
                     'subtotal' => $item['harga'] * $item['qty'],
+                    'customization' => isset($item['detail']) ? $item['detail'] : null,
                 ]);
 
                 // Reduce stock
@@ -100,5 +101,26 @@ class OrderController extends Controller
         }
 
         return redirect()->back()->with('success', 'Bukti transfer berhasil diunggah.');
+    }
+
+    public function uploadDesign(Request $request)
+    {
+        $request->validate([
+            'design_file' => 'required|image|max:5120',
+        ]);
+
+        if ($request->hasFile('design_file')) {
+            $path = $request->file('design_file')->store('designs', 'public');
+            return response()->json([
+                'success' => true,
+                'path' => $path,
+                'url' => asset('storage/' . $path)
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengunggah file'
+        ], 400);
     }
 }
