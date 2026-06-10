@@ -27,6 +27,7 @@ Route::get('/order/success/{id}', function ($id) {
 })->name('orders.success');
 Route::get('/status', [OrderController::class, 'checkStatus'])->name('orders.status');
 Route::get('/order/{id}', [OrderController::class, 'show'])->name('orders.show');
+Route::post('/order/{id}/upload-bukti', [OrderController::class, 'uploadBukti'])->name('orders.upload-bukti');
 
 // About
 Route::get('/about', function () {

@@ -1,8 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { ShoppingBag, Clock, Package, CheckCircle, Truck, Hash, User, Calendar, CreditCard } from 'lucide-react';
+import { ShoppingBag, Clock, Package, CheckCircle, Truck, Hash, User, Calendar, CreditCard, Eye, X, Download } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Index({ auth, orders }) {
+    const [selectedBukti, setSelectedBukti] = useState(null);
+
     const updateStatus = (id, status) => {
         router.put(route('admin.orders.update', id), { status });
     };
@@ -98,9 +101,19 @@ export default function Index({ auth, orders }) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-6 border-y border-transparent group-hover:border-slate-100 text-center">
-                                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-navy/5 rounded-2xl border border-brand-navy/5">
-                                                        <CreditCard size={14} className="text-brand-navy/30" />
-                                                        <span className="font-black text-brand-navy">Rp {order.grand_total.toLocaleString('id-ID')}</span>
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-navy/5 rounded-2xl border border-brand-navy/5">
+                                                            <CreditCard size={14} className="text-brand-navy/30" />
+                                                            <span className="font-black text-brand-navy">Rp {order.grand_total.toLocaleString('id-ID')}</span>
+                                                        </div>
+                                                        {order.bukti_transfer && (
+                                                            <button
+                                                                onClick={() => setSelectedBukti(`/storage/${order.bukti_transfer}`)}
+                                                                className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg border border-emerald-200/50 uppercase tracking-wider transition cursor-pointer"
+                                                            >
+                                                                <Eye size={10} /> Lihat Bukti
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-6 border-y border-transparent group-hover:border-slate-100 text-center">
@@ -140,6 +153,56 @@ export default function Index({ auth, orders }) {
                     </div>
                 </div>
             </div>
+
+            {/* Modal Bukti Transfer */}
+            {selectedBukti && (
+                <div className="fixed inset-0 bg-brand-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+                    <div className="bg-white rounded-[2.5rem] max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <h4 className="text-sm font-black text-brand-navy uppercase tracking-widest flex items-center gap-2">
+                                <CreditCard size={16} className="text-brand-lime" />
+                                Bukti Pembayaran Transfer Bank
+                            </h4>
+                            <button
+                                onClick={() => setSelectedBukti(null)}
+                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-brand-navy flex items-center justify-center transition cursor-pointer"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        
+                        {/* Modal Body */}
+                        <div className="p-8 flex flex-col items-center justify-center bg-slate-50/30">
+                            <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white p-3 shadow-inner max-w-full">
+                                <img
+                                    src={selectedBukti}
+                                    alt="Bukti Transfer"
+                                    className="max-h-[60vh] object-contain rounded-xl"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t border-slate-50 flex gap-3 bg-white">
+                            <a
+                                href={selectedBukti}
+                                download
+                                target="_blank"
+                                className="flex-grow bg-brand-navy text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl hover:bg-brand-dark transition text-center flex items-center justify-center gap-2 shadow-lg"
+                            >
+                                <Download size={14} className="text-brand-lime" /> Download Gambar
+                            </a>
+                            <button
+                                onClick={() => setSelectedBukti(null)}
+                                className="px-6 bg-slate-100 text-slate-600 hover:bg-slate-200 font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition cursor-pointer"
+                            >
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

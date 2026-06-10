@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -76,5 +77,28 @@ class OrderController extends Controller
     public function checkStatus()
     {
         return Inertia::render('CheckStatus');
+    }
+
+    public function uploadBukti(Request $request, $id)
+    {
+        $request->validate([
+            'bukti_transfer' => 'required|image|max:2048',
+        ]);
+
+        $order = Order::findOrFail($id);
+
+        if ($request->hasFile('bukti_transfer')) {
+            // Delete old proof of transfer if it exists
+            if ($order->bukti_transfer) {
+                Storage::disk('public')->delete($order->bukti_transfer);
+            }
+
+            $path = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
+            $order->update([
+                'bukti_transfer' => $path,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Bukti transfer berhasil diunggah.');
     }
 }
