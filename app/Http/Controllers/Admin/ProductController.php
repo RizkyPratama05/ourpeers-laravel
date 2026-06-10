@@ -3,36 +3,42 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
     public function index()
     {
+        // Sertakan nama kategori agar bisa ditampilkan di tabel admin
         return Inertia::render('Admin/Products/Index', [
-            'products' => Product::latest()->get(),
+            'products' => Product::with('category')->latest()->get(),
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Admin/Products/Create');
+        return Inertia::render('Admin/Products/Create', [
+            // Kirim daftar kategori untuk dropdown di form tambah produk
+            'categories' => Category::orderBy('nama')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'nama_produk' => 'required|string|max:255',
-            'harga' => 'required|numeric',
-            'stok' => 'required|integer',
-            'deskripsi' => 'required|string',
-            'bahan' => 'nullable|string',
-            'warna' => 'nullable|string',
-            'keunggulan' => 'nullable|string',
-            'gambar' => 'nullable|image|max:2048',
+            'harga'       => 'required|numeric|min:0',
+            'stok'        => 'required|integer|min:0',
+            'deskripsi'   => 'required|string',
+            'bahan'       => 'nullable|string',
+            'warna'       => 'nullable|string',
+            'keunggulan'  => 'nullable|string',
+            'gambar'      => 'nullable|image|max:2048',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         $data = $request->except('gambar');
@@ -44,13 +50,17 @@ class ProductController extends Controller
 
         Product::create($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function edit($id)
     {
         return Inertia::render('Admin/Products/Edit', [
-            'product' => Product::findOrFail($id),
+            'product'    => Product::with('category')->findOrFail($id),
+            // Kirim daftar kategori untuk dropdown di form edit produk
+            'categories' => Category::orderBy('nama')->get(),
         ]);
     }
 
@@ -60,20 +70,21 @@ class ProductController extends Controller
 
         $request->validate([
             'nama_produk' => 'required|string|max:255',
-            'harga' => 'required|numeric',
-            'stok' => 'required|integer',
-            'deskripsi' => 'required|string',
-            'bahan' => 'nullable|string',
-            'warna' => 'nullable|string',
-            'keunggulan' => 'nullable|string',
-            'gambar' => 'nullable|image|max:2048',
+            'harga'       => 'required|numeric|min:0',
+            'stok'        => 'required|integer|min:0',
+            'deskripsi'   => 'required|string',
+            'bahan'       => 'nullable|string',
+            'warna'       => 'nullable|string',
+            'keunggulan'  => 'nullable|string',
+            'gambar'      => 'nullable|image|max:2048',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         $data = $request->except('gambar');
 
         if ($request->hasFile('gambar')) {
-            // Delete old image
-            if ($product->gambar_url) {
+            // Hapus foto lama dari storage jika bukan URL eksternal
+            if ($product->gambar_url && !str_starts_with($product->gambar_url, 'http')) {
                 Storage::disk('public')->delete($product->gambar_url);
             }
             $path = $request->file('gambar')->store('products', 'public');
@@ -82,17 +93,24 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Produk berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
-        if ($product->gambar_url) {
+
+        // Hapus foto dari storage jika bukan URL eksternal
+        if ($product->gambar_url && !str_starts_with($product->gambar_url, 'http')) {
             Storage::disk('public')->delete($product->gambar_url);
         }
+
         $product->delete();
 
-        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Produk berhasil dihapus.');
     }
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -48,6 +49,7 @@ Route::get('/admin', function () {
 
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('products', AdminProductController::class);
+    Route::resource('categories', AdminCategoryController::class); // ← TAMBAH INI
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::put('orders/{id}', [AdminOrderController::class, 'update'])->name('orders.update');
 });

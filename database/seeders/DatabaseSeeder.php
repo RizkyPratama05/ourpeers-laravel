@@ -15,13 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Buat akun admin default
         User::factory()->create([
-            'name' => 'Admin Ourpeers',
+            'name'  => 'Admin Ourpeers',
             'email' => 'admin@ourpeers.com',
         ]);
 
-        $this->call(ProductSeeder::class);
+        $this->call([
+            CategorySeeder::class, // ← harus sebelum ProductSeeder
+            ProductSeeder::class,
+        ]);
     }
 }

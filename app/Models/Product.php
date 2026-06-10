@@ -15,4 +15,12 @@ class Product extends Model
         'warna',
         'keunggulan',
         'gambar_url',
-    ];}
+        'category_id', // ← tambahkan ini
+    ];
+
+    // Setiap produk milik satu kategori
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+}
