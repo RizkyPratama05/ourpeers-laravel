@@ -10,6 +10,10 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\OrderCreatedMail;
+use App\Mail\OrderStatusUpdatedMail;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -69,6 +73,42 @@ class OrderController extends Controller
             }
         });
 
+        try {
+            $order = Order::findOrFail($orderId);
+            if ($order->email_pemesan) {
+                Mail::to($order->email_pemesan)->send(new OrderCreatedMail($order));
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim email konfirmasi order: ' . $e->getMessage());
+        }
+
+        try {
+            $order = Order::findOrFail($orderId);
+            if ($order->whatsapp_pemesan) {
+                $whatsappService = app(\App\Services\WhatsAppService::class);
+                $formattedTotal = number_format($order->grand_total, 0, ',', '.');
+                $statusUrl = url("/order/{$order->id}");
+                
+                $message = "Halo *{$order->nama_pemesan}*,\n\n"
+                    . "Terima kasih telah melakukan pemesanan di *Ourpeers Konveksi*.\n\n"
+                    . "Detail Pesanan Anda:\n"
+                    . "- Kode Pesanan: *#{$order->id}*\n"
+                    . "- Total Tagihan: *Rp {$formattedTotal}*\n"
+                    . "- Metode Pembayaran: Transfer Bank Manual\n\n"
+                    . "Silakan lakukan transfer ke salah satu rekening berikut:\n"
+                    . "1. *Bank BCA*: 123-456-7890 a.n. Ourpeers Konveksi\n"
+                    . "2. *Bank Mandiri*: 098-765-4321 a.n. Ourpeers Konveksi\n\n"
+                    . "Setelah melakukan transfer, silakan unggah bukti transfer Anda dengan membuka tautan berikut:\n"
+                    . "{$statusUrl}\n\n"
+                    . "Terima kasih,\n"
+                    . "*Ourpeers Konveksi*";
+
+                $whatsappService->send($order->whatsapp_pemesan, $message);
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim WhatsApp konfirmasi order: ' . $e->getMessage());
+        }
+
         return redirect()->route('orders.success', ['id' => $orderId]);
     }
 
@@ -103,6 +143,33 @@ class OrderController extends Controller
                 'bukti_transfer' => $path,
                 'status' => 'sudah_bayar',
             ]);
+        }
+
+        try {
+            if ($order->email_pemesan) {
+                Mail::to($order->email_pemesan)->send(new OrderStatusUpdatedMail($order));
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim email status update order (upload bukti): ' . $e->getMessage());
+        }
+
+        try {
+            if ($order->whatsapp_pemesan) {
+                $whatsappService = app(\App\Services\WhatsAppService::class);
+                $statusUrl = url("/order/{$order->id}");
+                
+                $message = "Halo *{$order->nama_pemesan}*,\n\n"
+                    . "Bukti pembayaran untuk pesanan *#{$order->id}* telah kami terima dan saat ini sedang diverifikasi oleh admin.\n\n"
+                    . "Status Pesanan Anda: *Pembayaran Diterima (Menunggu Verifikasi)*\n\n"
+                    . "Anda dapat memantau perkembangan pesanan Anda secara berkala melalui tautan berikut:\n"
+                    . "{$statusUrl}\n\n"
+                    . "Terima kasih,\n"
+                    . "*Ourpeers Konveksi*";
+
+                $whatsappService->send($order->whatsapp_pemesan, $message);
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim WhatsApp status update (upload bukti): ' . $e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Bukti transfer berhasil diunggah.');
