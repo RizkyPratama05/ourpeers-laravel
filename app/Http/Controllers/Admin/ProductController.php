@@ -16,6 +16,7 @@ class ProductController extends Controller
         // Sertakan nama kategori agar bisa ditampilkan di tabel admin
         return Inertia::render('Admin/Products/Index', [
             'products' => Product::with('category')->latest()->get(),
+            'categories' => Category::all(),
         ]);
     }
 
